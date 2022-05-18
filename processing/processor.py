@@ -37,7 +37,6 @@ class Processor:
                     cv2.circle(frame, (cX, cY), 30, [255, 255, 255])
                     # print(cX,cY)
                     # cv2.putText(frame, "center", (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-        cv2.imshow('frame', frame)
         cv2.imshow('Output', mask)
         return points
 
@@ -59,10 +58,11 @@ class Processor:
                 frame_timestamp = start_time + \
                     datetime.timedelta(milliseconds=last_time)
                 last_time = last_time+1000/fps
-
-                if frame_timestamp == datetime.datetime.strptime("2022-05-17_"+timestamp, '%Y-%m-%d_%H:%M:%S'):
-                    point = list(points)[0]
-                    print(frame_timestamp, point, (point[0]/width)*100)
+                m = 1.137195078
+                n = 390.392018851
+                if len(points) == 1:
+                    cv2.putText(frame, str(m*points[0][0]+n), points[0], cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+                cv2.imshow('frame', frame)
                     # return
                 # Display the resulting frame
                 if cv2.waitKey(25) & 0xFF == ord('q'):

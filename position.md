@@ -1,4 +1,4 @@
-|Zeitpunkt | Gemessene Position von rechts in CM | X-Koordinate im Bild | Prozent von rechtem Bildrand |
+|Zeitpunkt | Gemessene Position von links in CM | X-Koordinate im Bild | Prozent von linkem Bildrand |
 |---|---|---|---|---|
 | 2022-05-17 16:24:09 | 472 | 68 | 3,542 |
 | 2022-05-17 16:25:55 | 674 | 244 | 12,708 |

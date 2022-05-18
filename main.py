@@ -24,31 +24,29 @@ def test():
                   ], "--bo")
     plt.show()
 
-
+#TODO mechanismus:
 def main():
-    test()
-    return
     processor = Processor()
-    path = "D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_16-23-42.mp4"
+    path = "D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_22-59-41.mp4"
     processor.analyze(path, "16:24:09")
 
-    path = "D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_16-25-42.mp4"
-    processor.analyze(path, "16:25:55")
+    # path = "D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_16-25-42.mp4"
+    # processor.analyze(path, "16:25:55")
 
-    path = "D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_16-25-42.mp4"
-    processor.analyze(path, "16:26:30")
+    # path = "D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_16-25-42.mp4"
+    # processor.analyze(path, "16:26:30")
 
-    path = "D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_16-28-42.mp4"
-    processor.analyze(path, "16:29:06")
+    # path = "D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_16-28-42.mp4"
+    # processor.analyze(path, "16:29:06")
 
-    path = "D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_16-29-42.mp4"
-    processor.analyze(path, "16:29:49")
+    # path = "D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_16-29-42.mp4"
+    # processor.analyze(path, "16:29:49")
 
-    path = "D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_16-30-42.mp4"
-    processor.analyze(path, "16:31:11")
+    # path = "D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_16-30-42.mp4"
+    # processor.analyze(path, "16:31:11")
 
-    path = "D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_16-31-42.mp4"
-    processor.analyze(path, "16:31:53")
+    # path = "D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_16-31-42.mp4"
+    # processor.analyze(path, "16:31:53")
 
     print("running main")
 
