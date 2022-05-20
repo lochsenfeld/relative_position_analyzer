@@ -24,14 +24,15 @@ def test():
                   ], "--bo")
     plt.show()
 
-#TODO mechanismus:
+#TODO mechanismus: warnungen fehler etc, telegram?
+#TODO mehrere kräne
 def main():
     processor = Processor()
-    path = "D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_22-59-41.mp4"
-    processor.analyze(path, "16:24:09")
+    # path = "D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_22-59-41.mp4"
+    # processor.analyze(path, "16:24:09")
 
-    # path = "D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_16-25-42.mp4"
-    # processor.analyze(path, "16:25:55")
+    path = "D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_16-35-42.mp4"
+    processor.analyze(path, "16:25:55")
 
     # path = "D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_16-25-42.mp4"
     # processor.analyze(path, "16:26:30")
