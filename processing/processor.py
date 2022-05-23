@@ -4,13 +4,13 @@ from ctypes import Array
 import numpy as np
 import os
 import datetime
-import time
 
 
 class Processor:
 
     def get_center_of_mass(self, frame: Array) -> None:
-        
+
+        # frame = frame.copy()
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
         lower1 = np.array([160, 40, 105])  # 160,180,40,148,105,219
@@ -41,26 +41,23 @@ class Processor:
         # mask = cv2.erode(mask, kernel, iterations=cv2.getTrackbarPos("i1", "trackbars"))
         # mask = cv2.dilate(mask, kernel, iterations=cv2.getTrackbarPos("i2", "trackbars"))
         normed = cv2.normalize(mask, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8UC1)
-        kernel = cv2.getStructuringElement(shape=cv2.MORPH_ELLIPSE, ksize=(3,3))
+        kernel = cv2.getStructuringElement(shape=cv2.MORPH_ELLIPSE, ksize=(3, 3))
         mask = cv2.morphologyEx(normed, cv2.MORPH_OPEN, kernel)
 
         contours, _ = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
         points = []
 
-            for contour in contours:
+        for contour in contours:
             if cv2.contourArea(contour) > 40:
-                    x, y, w, h = cv2.boundingRect(contour)
+                x, y, w, h = cv2.boundingRect(contour)
                 cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 1, 16)
                 rbox = cv2.minAreaRect(contour)
                 (cX, cY), (w, h), rot_angle = rbox
                 if rot_angle <= 80 and rot_angle >= 100:
                     continue
-                # print("rot_angle:", rot_angle,x,y,w,h)
-                points.append((int(cX),int(cY)))
-                # cv2.circle(frame, (cX, cY), 30, [255, 255, 255])
-        cv2.imshow('Output', mask)
-        return points
+                points.append((int(cX), int(cY)))
+        return points, mask
 
     def analyze(self, filePath: str, timestamp: str) -> None:
         cap = cv2.VideoCapture(filePath)
@@ -69,37 +66,40 @@ class Processor:
         print(start_time)
         fps = cap.get(cv2.CAP_PROP_FPS)
         last_time = 0.0
-        prev_frame_time = 0
-        new_frame_time = 0
+
         while cap.isOpened():
-            # Capture frame-by-frame
             frame_exists, curr_frame = cap.read()
             if frame_exists:
-                new_frame_time = time.time()
-                fps2 = 1/(new_frame_time-prev_frame_time)
-                prev_frame_time = new_frame_time
-                fps2 = str(int(fps2))
-              
+
                 frame = curr_frame[510:600, 0:-1]
-                cv2.putText(frame, fps2, (7, 70), cv2.FONT_HERSHEY_SIMPLEX, 3, (100, 255, 0), 3, cv2.LINE_AA)
-                points = self.get_center_of_mass(frame)
+                points, mask = self.get_center_of_mass(frame)
                 frame_timestamp = start_time + \
                     datetime.timedelta(milliseconds=last_time)
+                if str(frame_timestamp) == "2022-05-17 16:36:05":
+                    break
                 last_time = last_time+1000/fps
                 m = 1.1373369636
                 n = 287.5710922481
                 if len(points) == 2:
                     p1 = points[0]
                     p2 = points[1]
-                    cv2.putText(frame, str(m*p1[0]+n), p1, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+                    if p1[0] >= p2[0]:
+                        k1Value = int(m*p1[0]+n)
+                        k2Value = int(m*p2[0]+n)
+                    else:
+                        k2Value = int(m*p1[0]+n)
+                        k1Value = int(m*p2[0]+n)
+                    cv2.putText(frame, str(k1Value), p1, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     cv2.putText(frame, "Kran 1" if p1[0] >= p2[0] else "Kran 2", (p1[0], p1[1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-                    cv2.putText(frame, str(m*p2[0]+n), p2, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+                    cv2.putText(frame, str(k2Value), p2, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     cv2.putText(frame, "Kran 1" if p2[0] >= p1[0] else "Kran 2", (p2[0], p2[1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                 elif len(points) == 1:
-                    cv2.putText(frame, str(m*points[0][0]+n), points[0], cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+                    k1Value = int(m*points[0][0]+n)
+                    cv2.putText(frame, str(k1Value), points[0], cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     cv2.putText(frame, "Kran 1", (points[0][0], points[0][1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                 elif len(points) > 2:
                     print("more than 2 points")
+                cv2.imshow('Output', mask)
                 cv2.imshow('frame', frame)
                 if cv2.waitKey(25) & 0xFF == ord('q'):
                     break
