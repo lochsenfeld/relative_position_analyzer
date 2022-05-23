@@ -5,8 +5,13 @@ import numpy as np
 import os
 import datetime
 
+from db.context import DataContext
+
 
 class Processor:
+
+    def __init__(self, dataContext: DataContext) -> None:
+        self.ctx = dataContext
 
     def get_center_of_mass(self, frame: Array) -> None:
 
@@ -49,7 +54,8 @@ class Processor:
         points = []
 
         for contour in contours:
-            if cv2.contourArea(contour) > 40:
+            # print(cv2.contourArea(contour))
+            if cv2.contourArea(contour) > 30:
                 x, y, w, h = cv2.boundingRect(contour)
                 cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 1, 16)
                 rbox = cv2.minAreaRect(contour)
@@ -57,6 +63,8 @@ class Processor:
                 if rot_angle <= 80 and rot_angle >= 100:
                     continue
                 points.append((int(cX), int(cY)))
+        if len(points) == 0:
+            print("KEINE DATENPUNKTE!", max(list(map(lambda x: cv2.contourArea(x),contours))))
         return points, mask
 
     def analyze(self, filePath: str, timestamp: str) -> None:
@@ -89,12 +97,15 @@ class Processor:
                     else:
                         k2Value = int(m*p1[0]+n)
                         k1Value = int(m*p2[0]+n)
+                    self.ctx.insertMeasurementK1(frame_timestamp, k1Value)
+                    self.ctx.insertMeasurementK2(frame_timestamp, k2Value)
                     cv2.putText(frame, str(k1Value), p1, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     cv2.putText(frame, "Kran 1" if p1[0] >= p2[0] else "Kran 2", (p1[0], p1[1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     cv2.putText(frame, str(k2Value), p2, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     cv2.putText(frame, "Kran 1" if p2[0] >= p1[0] else "Kran 2", (p2[0], p2[1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                 elif len(points) == 1:
                     k1Value = int(m*points[0][0]+n)
+                    self.ctx.insertMeasurementK1(frame_timestamp, k1Value)
                     cv2.putText(frame, str(k1Value), points[0], cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     cv2.putText(frame, "Kran 1", (points[0][0], points[0][1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                 elif len(points) > 2:

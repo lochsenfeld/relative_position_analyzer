@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from db.context import DataContext
 from processing.processor import Processor
 import matplotlib.pyplot as plt
 
@@ -24,15 +25,18 @@ def test():
                   ], "--bo")
     plt.show()
 
-#TODO mechanismus: warnungen fehler etc, telegram?
-#TODO mehrere kräne
-def main():
-    processor = Processor()
-    # path = "D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_22-59-41.mp4"
-    # processor.analyze(path, "16:24:09")
+# TODO mechanismus: warnungen fehler etc, telegram?
+# TODO mehrere kräne
 
-    path = "D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_16-35-42.mp4"
-    processor.analyze(path, "16:25:55")
+
+def main():
+    dataContext = DataContext()
+    processor = Processor(dataContext)
+    path = "D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_22-59-41.mp4"
+    processor.analyze(path, "16:24:09")
+
+    # path = "D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_16-35-42.mp4"
+    # processor.analyze(path, "16:25:55")
 
     # path = "D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_16-25-42.mp4"
     # processor.analyze(path, "16:26:30")
