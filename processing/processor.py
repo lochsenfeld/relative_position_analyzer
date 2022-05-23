@@ -56,8 +56,8 @@ class Processor:
         for contour in contours:
             # print(cv2.contourArea(contour))
             if cv2.contourArea(contour) > 30:
-                x, y, w, h = cv2.boundingRect(contour)
-                cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 1, 16)
+                # x, y, w, h = cv2.boundingRect(contour)
+                # cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 1, 16)
                 rbox = cv2.minAreaRect(contour)
                 (cX, cY), (w, h), rot_angle = rbox
                 if rot_angle <= 80 and rot_angle >= 100:
@@ -65,14 +65,16 @@ class Processor:
                 points.append((int(cX), int(cY)))
         if len(points) == 0:
             print("KEINE DATENPUNKTE!", max(list(map(lambda x: cv2.contourArea(x), contours))))
-        return points, mask
+        elif len(points) > 2:
+            print("MORE THAN 2 POINTS")
+        return points
 
     def analyze(self, filePath: str) -> None:
         fileName = os.path.basename(filePath)
+        print("File: ", fileName)
         cap = cv2.VideoCapture(filePath)
         c_time = os.path.basename(filePath)
         start_time = datetime.datetime.strptime(c_time, '%Y-%m-%d_%H-%M-%S.mp4')
-        print(start_time)
         fps = cap.get(cv2.CAP_PROP_FPS)
         last_time = 0.0
         self.ctx.clearFile(fileName)
@@ -81,7 +83,7 @@ class Processor:
             if frame_exists:
 
                 frame = curr_frame[510:600, 0:-1]
-                points, mask = self.get_center_of_mass(frame)
+                points = self.get_center_of_mass(frame)
                 frame_timestamp = start_time + \
                     datetime.timedelta(milliseconds=last_time)
                 if str(frame_timestamp) == "2022-05-17 16:36:05":
@@ -98,20 +100,19 @@ class Processor:
                     else:
                         k2Value = int(m*p1[0]+n)
                         k1Value = int(m*p2[0]+n)
-                    self.ctx.insertMeasurement(fileName, frame_timestamp, k1Value, k2Value)
-                    cv2.putText(frame, str(k1Value), p1, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-                    cv2.putText(frame, "Kran 1" if p1[0] >= p2[0] else "Kran 2", (p1[0], p1[1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-                    cv2.putText(frame, str(k2Value), p2, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-                    cv2.putText(frame, "Kran 1" if p2[0] >= p1[0] else "Kran 2", (p2[0], p2[1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+                    # self.ctx.insertMeasurement(fileName, frame_timestamp, k1Value, k2Value) #TODO
+
+                    # cv2.putText(frame, str(k1Value), p1, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+                    # cv2.putText(frame, "Kran 1" if p1[0] >= p2[0] else "Kran 2", (p1[0], p1[1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+                    # cv2.putText(frame, str(k2Value), p2, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+                    # cv2.putText(frame, "Kran 1" if p2[0] >= p1[0] else "Kran 2", (p2[0], p2[1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                 elif len(points) == 1:
                     k1Value = int(m*points[0][0]+n)
-                    self.ctx.insertMeasurement(fileName, frame_timestamp, k1Value)
-                    cv2.putText(frame, str(k1Value), points[0], cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-                    cv2.putText(frame, "Kran 1", (points[0][0], points[0][1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-                elif len(points) > 2:
-                    print("more than 2 points")
-                cv2.imshow('Output', mask)
-                cv2.imshow('frame', frame)
+                    # self.ctx.insertMeasurement(fileName, frame_timestamp, k1Value) # TODO
+                    # cv2.putText(frame, str(k1Value), points[0], cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+                    # cv2.putText(frame, "Kran 1", (points[0][0], points[0][1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+                # cv2.imshow('Output', mask)
+                # cv2.imshow('frame', frame)
                 if cv2.waitKey(25) & 0xFF == ord('q'):
                     break
 
