@@ -21,9 +21,6 @@ class DataContext:
         # if dbVersion ==1:
         #     print("migrating")
         print("DB-Version is", dbVersion)
-        print(cur.execute("SELECT * FROM k1_measurements;"))
-        for row in cur.execute("SELECT * FROM k1_measurements;"):
-            print(row)
 
     def __getDbVersion(self) -> None:
         cur = self.ctx.cursor()
@@ -38,7 +35,7 @@ class DataContext:
         cur.execute('''INSERT INTO migrations VALUES (1)''')
         self.ctx.commit()
 
-    def insertMeasurement(self, filename: str, datetime: datetime, k1: int, k2: int) -> None:
+    def insertMeasurement(self, filename: str, datetime: datetime, k1: int, k2: int = None) -> None:
         cur = self.ctx.cursor()
         cur.execute('''INSERT INTO measurements VALUES (?,?,?,?);''', (filename, datetime, k1, k2))
         self.ctx.commit()

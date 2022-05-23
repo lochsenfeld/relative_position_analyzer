@@ -64,17 +64,18 @@ class Processor:
                     continue
                 points.append((int(cX), int(cY)))
         if len(points) == 0:
-            print("KEINE DATENPUNKTE!", max(list(map(lambda x: cv2.contourArea(x),contours))))
+            print("KEINE DATENPUNKTE!", max(list(map(lambda x: cv2.contourArea(x), contours))))
         return points, mask
 
-    def analyze(self, filePath: str, timestamp: str) -> None:
+    def analyze(self, filePath: str) -> None:
+        fileName = os.path.basename(filePath)
         cap = cv2.VideoCapture(filePath)
         c_time = os.path.basename(filePath)
         start_time = datetime.datetime.strptime(c_time, '%Y-%m-%d_%H-%M-%S.mp4')
         print(start_time)
         fps = cap.get(cv2.CAP_PROP_FPS)
         last_time = 0.0
-
+        self.ctx.clearFile(fileName)
         while cap.isOpened():
             frame_exists, curr_frame = cap.read()
             if frame_exists:
@@ -97,15 +98,14 @@ class Processor:
                     else:
                         k2Value = int(m*p1[0]+n)
                         k1Value = int(m*p2[0]+n)
-                    self.ctx.insertMeasurementK1(frame_timestamp, k1Value)
-                    self.ctx.insertMeasurementK2(frame_timestamp, k2Value)
+                    self.ctx.insertMeasurement(fileName, frame_timestamp, k1Value, k2Value)
                     cv2.putText(frame, str(k1Value), p1, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     cv2.putText(frame, "Kran 1" if p1[0] >= p2[0] else "Kran 2", (p1[0], p1[1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     cv2.putText(frame, str(k2Value), p2, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     cv2.putText(frame, "Kran 1" if p2[0] >= p1[0] else "Kran 2", (p2[0], p2[1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                 elif len(points) == 1:
                     k1Value = int(m*points[0][0]+n)
-                    self.ctx.insertMeasurementK1(frame_timestamp, k1Value)
+                    self.ctx.insertMeasurement(fileName, frame_timestamp, k1Value)
                     cv2.putText(frame, str(k1Value), points[0], cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     cv2.putText(frame, "Kran 1", (points[0][0], points[0][1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                 elif len(points) > 2:
