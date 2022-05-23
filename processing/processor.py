@@ -12,23 +12,53 @@ class Processor:
     def get_center_of_mass(self, frame: Array) -> None:
         
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        lower1 = np.array([169, 150, 20])
-        upper1 = np.array([180, 255, 255])
 
-        mask = cv2.inRange(hsv, lower1, upper1)
+        lower1 = np.array([160, 40, 105])  # 160,180,40,148,105,219
+        upper1 = np.array([180, 148, 219])
 
-        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        mask1 = cv2.inRange(hsv, lower1, upper1)
+
+        lower2 = np.array([169, 150, 20])
+        upper2 = np.array([180, 255, 255])
+
+        mask2 = cv2.inRange(hsv, lower2, upper2)
+
+        mask = cv2.bitwise_or(mask1, mask2)
+
+        lower3 = np.array([172, 0, 136])
+        upper3 = np.array([173, 41, 144])
+        mask3 = cv2.inRange(hsv, lower3, upper3)
+
+        mask = cv2.subtract(mask, mask3)
+
+        lower4 = np.array([173, 40, 101])
+        upper4 = np.array([178, 52, 127])
+        mask4 = cv2.inRange(hsv, lower4, upper4)
+
+        mask = cv2.subtract(mask, mask4)
+
+        kernel = (3, 3)
+        # mask = cv2.erode(mask, kernel, iterations=cv2.getTrackbarPos("i1", "trackbars"))
+        # mask = cv2.dilate(mask, kernel, iterations=cv2.getTrackbarPos("i2", "trackbars"))
+        normed = cv2.normalize(mask, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8UC1)
+        kernel = cv2.getStructuringElement(shape=cv2.MORPH_ELLIPSE, ksize=(3,3))
+        mask = cv2.morphologyEx(normed, cv2.MORPH_OPEN, kernel)
+
+        contours, _ = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
         points = []
-        if len(contours) != 0:
+
             for contour in contours:
-                if cv2.contourArea(contour) > 20:
-                    #print(cv2.contourArea(contour))
+            if cv2.contourArea(contour) > 40:
                     x, y, w, h = cv2.boundingRect(contour)
-                    cX = int(x+w/2)
-                    cY = int(y+h/2)
-                    points.append((cX, cY))
-                    cv2.circle(frame, (cX, cY), 30, [255, 255, 255])
+                cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 1, 16)
+                rbox = cv2.minAreaRect(contour)
+                (cX, cY), (w, h), rot_angle = rbox
+                if rot_angle <= 80 and rot_angle >= 100:
+                    continue
+                # print("rot_angle:", rot_angle,x,y,w,h)
+                points.append((int(cX),int(cY)))
+                # cv2.circle(frame, (cX, cY), 30, [255, 255, 255])
         cv2.imshow('Output', mask)
         return points
 
