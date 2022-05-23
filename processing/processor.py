@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import time
 import cv2
 from ctypes import Array
 import numpy as np
@@ -7,19 +8,34 @@ import datetime
 
 from db.context import DataContext
 
+values = []
+
 
 class Processor:
 
     def __init__(self, dataContext: DataContext) -> None:
         self.ctx = dataContext
+        self.m = 1.1373369636
+        self.n = 287.5710922481
+
+    def calculatePosition(self, x: float) -> int:
+        return int(self.m*x+self.n)
 
     def get_center_of_mass(self, frame: Array) -> None:
 
-        # frame = frame.copy()
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-        lower1 = np.array([160, 40, 105])  # 160,180,40,148,105,219
+        # h_low = cv2.getTrackbarPos("h_low", "trackbars")
+        # h_high = cv2.getTrackbarPos("h_high", "trackbars")
+        # s_low = cv2.getTrackbarPos("s_low", "trackbars")
+        # s_high = cv2.getTrackbarPos("s_high", "trackbars")
+        # v_low = cv2.getTrackbarPos("v_low", "trackbars")
+        # v_high = cv2.getTrackbarPos("v_high", "trackbars")
+
+        lower1 = np.array([160, 57, 105])
         upper1 = np.array([180, 148, 219])
+        # lower1 = np.array([h_low, s_low, v_low])
+        # upper1 = np.array([h_high, s_high, v_high])
 
         mask1 = cv2.inRange(hsv, lower1, upper1)
 
@@ -54,8 +70,7 @@ class Processor:
         points = []
 
         for contour in contours:
-            # print(cv2.contourArea(contour))
-            if cv2.contourArea(contour) > 30:
+            if cv2.contourArea(contour) > 20:
                 # x, y, w, h = cv2.boundingRect(contour)
                 # cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 1, 16)
                 rbox = cv2.minAreaRect(contour)
@@ -67,7 +82,41 @@ class Processor:
             print("KEINE DATENPUNKTE!", max(list(map(lambda x: cv2.contourArea(x), contours))))
         elif len(points) > 2:
             print("MORE THAN 2 POINTS")
+            # cv2.imwrite("test.png", frame)
         return points
+
+    def test(self):
+
+        # c2 = cv2.VideoCapture("D:/Projekte/macki/Kalibrierung 17.05/Kranstellungen 17.05/2022-05-17_22-59-41.mp4")
+        # _, f2 = c2.read()
+        # f2 = f2[510:600, 0:-1]
+        cv2.namedWindow("trackbars")
+        cv2.resizeWindow("trackbars", 1900, 200)
+
+        def empty(x):
+            pass
+        # 160,180,40,148,105,219
+
+        # lower1 = np.array([160, 40, 105])
+        # upper1 = np.array([180, 148, 219])
+        cv2.createTrackbar("h_low", "trackbars", 160, 180, empty)
+        cv2.createTrackbar("h_high", "trackbars", 180, 180, empty)
+        cv2.createTrackbar("s_low", "trackbars", 40, 255, empty)
+        cv2.createTrackbar("s_high", "trackbars", 148, 255, empty)
+        cv2.createTrackbar("v_low", "trackbars", 105, 255, empty)
+        cv2.createTrackbar("v_high", "trackbars", 219, 255, empty)
+        cv2.createTrackbar("i1", "trackbars", 3, 10, empty)
+        cv2.createTrackbar("i2", "trackbars", 4, 10, empty)
+        while True:
+            f1 = cv2.imread("test.png")
+            m1 = self.get_center_of_mass(f1)
+            cv2.imshow('f1', f1)
+            cv2.imshow('m1', m1)
+
+            if cv2.waitKey(25) & 0xFF == ord('q'):
+                break
+        # Closes all the frames
+        cv2.destroyAllWindows()
 
     def analyze(self, filePath: str) -> None:
         fileName = os.path.basename(filePath)
@@ -78,6 +127,8 @@ class Processor:
         fps = cap.get(cv2.CAP_PROP_FPS)
         last_time = 0.0
         self.ctx.clearFile(fileName)
+        start = time.time()
+        measurements = []
         while cap.isOpened():
             frame_exists, curr_frame = cap.read()
             if frame_exists:
@@ -86,39 +137,38 @@ class Processor:
                 points = self.get_center_of_mass(frame)
                 frame_timestamp = start_time + \
                     datetime.timedelta(milliseconds=last_time)
-                if str(frame_timestamp) == "2022-05-17 16:36:05":
-                    break
                 last_time = last_time+1000/fps
-                m = 1.1373369636
-                n = 287.5710922481
+                values.append(points)
                 if len(points) == 2:
                     p1 = points[0]
                     p2 = points[1]
                     if p1[0] >= p2[0]:
-                        k1Value = int(m*p1[0]+n)
-                        k2Value = int(m*p2[0]+n)
+                        k1Value = self.calculatePosition(p1[0])
+                        k2Value = self.calculatePosition(p2[0])
                     else:
-                        k2Value = int(m*p1[0]+n)
-                        k1Value = int(m*p2[0]+n)
-                    # self.ctx.insertMeasurement(fileName, frame_timestamp, k1Value, k2Value) #TODO
-
+                        k2Value = self.calculatePosition(p1[0])
+                        k1Value = self.calculatePosition(p2[0])
+                    measurements.append((frame_timestamp, k1Value, k2Value))
                     # cv2.putText(frame, str(k1Value), p1, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     # cv2.putText(frame, "Kran 1" if p1[0] >= p2[0] else "Kran 2", (p1[0], p1[1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     # cv2.putText(frame, str(k2Value), p2, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     # cv2.putText(frame, "Kran 1" if p2[0] >= p1[0] else "Kran 2", (p2[0], p2[1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                 elif len(points) == 1:
-                    k1Value = int(m*points[0][0]+n)
-                    # self.ctx.insertMeasurement(fileName, frame_timestamp, k1Value) # TODO
+                    k1Value = self.calculatePosition(points[0][0])
+                    measurements.append((frame_timestamp, k1Value, None))
                     # cv2.putText(frame, str(k1Value), points[0], cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     # cv2.putText(frame, "Kran 1", (points[0][0], points[0][1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                 # cv2.imshow('Output', mask)
                 # cv2.imshow('frame', frame)
-                if cv2.waitKey(25) & 0xFF == ord('q'):
-                    break
+                # if cv2.waitKey(25) & 0xFF == ord('q'):
+                #     break
 
             # Break the loop
             else:
                 break
+        self.ctx.insertMeasurements(fileName, measurements)
+        end = time.time()
+        print("Took x seconds:", int(end - start))
         # When everything done, release the video capture object
         cap.release()
         # Closes all the frames

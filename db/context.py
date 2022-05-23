@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from datetime import datetime
 import sqlite3
+from typing import List
 import constants
 
 
@@ -35,9 +36,9 @@ class DataContext:
         cur.execute('''INSERT INTO migrations VALUES (1)''')
         self.ctx.commit()
 
-    def insertMeasurement(self, filename: str, datetime: datetime, k1: int, k2: int = None) -> None:
+    def insertMeasurements(self, filename: str, measurements: List[tuple[datetime, int, int]]) -> None:
         cur = self.ctx.cursor()
-        cur.execute('''INSERT INTO measurements VALUES (?,?,?,?);''', (filename, datetime, k1, k2))
+        cur.executemany('''INSERT INTO measurements VALUES (?,?,?,?);''', list(map(lambda x: (filename,)+x, measurements)))
         self.ctx.commit()
 
     def clearFile(self, filename: str) -> None:
