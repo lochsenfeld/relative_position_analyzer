@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import time
+from typing import List, Tuple
 import cv2
 from ctypes import Array
 import numpy as np
@@ -7,8 +8,6 @@ import os
 import datetime
 
 from db.context import DataContext
-
-values = []
 
 
 class Processor:
@@ -80,14 +79,14 @@ class Processor:
                 points.append((int(cX), int(cY)))
         if len(points) == 0:
             cs = list(map(lambda x: cv2.contourArea(x), contours))
-            if len(cs)>0:
+            if len(cs) > 0:
                 print("KEINE DATENPUNKTE!", max(cs))
             else:
                 print("KEINE DATENPUNKTE!")
         elif len(points) > 2:
             print("MORE THAN 2 POINTS")
             # cv2.imwrite("test.png", frame)
-        return points,mask
+        return points, mask
 
     def test(self):
 
@@ -122,6 +121,35 @@ class Processor:
         # Closes all the frames
         cv2.destroyAllWindows()
 
+    def get_static_positions(self, files: List[Tuple[str, str]]):
+        for (filePath, timestamp) in files:
+            fileName = os.path.basename(filePath)
+            print("File: ", fileName)
+            cap = cv2.VideoCapture(filePath)
+            c_time = os.path.basename(filePath)
+            start_time = datetime.datetime.strptime(c_time, '%Y-%m-%d_%H-%M-%S.mp4')
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            last_time = 0.0
+            while cap.isOpened():
+                frame_exists, curr_frame = cap.read()
+                if frame_exists:
+
+                    frame = curr_frame[510:600, 0:-1]
+                    points, mask = self.get_center_of_mass(frame)
+                    frame_timestamp = start_time + \
+                        datetime.timedelta(milliseconds=last_time)
+                    last_time = last_time+1000/fps
+                    if str(frame_timestamp) != timestamp:
+                        continue
+                    else:
+                        print(timestamp, points)
+                        break
+                else:
+                    break
+            cap.release()
+            # Closes all the frames
+            cv2.destroyAllWindows()
+
     def analyze(self, filePath: str) -> None:
         fileName = os.path.basename(filePath)
         print("File: ", fileName)
@@ -142,7 +170,6 @@ class Processor:
                 frame_timestamp = start_time + \
                     datetime.timedelta(milliseconds=last_time)
                 last_time = last_time+1000/fps
-                values.append(points)
                 if len(points) == 2:
                     p1 = points[0]
                     p2 = points[1]
