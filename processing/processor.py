@@ -79,11 +79,15 @@ class Processor:
                     continue
                 points.append((int(cX), int(cY)))
         if len(points) == 0:
-            print("KEINE DATENPUNKTE!", max(list(map(lambda x: cv2.contourArea(x), contours))))
+            cs = list(map(lambda x: cv2.contourArea(x), contours))
+            if len(cs)>0:
+                print("KEINE DATENPUNKTE!", max(cs))
+            else:
+                print("KEINE DATENPUNKTE!")
         elif len(points) > 2:
             print("MORE THAN 2 POINTS")
             # cv2.imwrite("test.png", frame)
-        return points
+        return points,mask
 
     def test(self):
 
@@ -134,7 +138,7 @@ class Processor:
             if frame_exists:
 
                 frame = curr_frame[510:600, 0:-1]
-                points = self.get_center_of_mass(frame)
+                points, mask = self.get_center_of_mass(frame)
                 frame_timestamp = start_time + \
                     datetime.timedelta(milliseconds=last_time)
                 last_time = last_time+1000/fps
