@@ -14,11 +14,6 @@ class Processor:
 
     def __init__(self, dataContext: DataContext) -> None:
         self.ctx = dataContext
-        self.m = 1.1373369636
-        self.n = 287.5710922481
-
-    def calculatePosition(self, x: float) -> int:
-        return int(self.m*x+self.n)
 
     def get_center_of_mass(self, frame: Array) -> None:
 
@@ -174,18 +169,18 @@ class Processor:
                     p1 = points[0]
                     p2 = points[1]
                     if p1[0] >= p2[0]:
-                        k1Value = self.calculatePosition(p1[0])
-                        k2Value = self.calculatePosition(p2[0])
+                        k2Value = p1[0]
+                        k1Value = p2[0]
                     else:
-                        k2Value = self.calculatePosition(p1[0])
-                        k1Value = self.calculatePosition(p2[0])
+                        k1Value = p1[0]
+                        k2Value = p2[0]
                     measurements.append((frame_timestamp, k1Value, k2Value))
                     # cv2.putText(frame, str(k1Value), p1, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     # cv2.putText(frame, "Kran 1" if p1[0] >= p2[0] else "Kran 2", (p1[0], p1[1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     # cv2.putText(frame, str(k2Value), p2, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     # cv2.putText(frame, "Kran 1" if p2[0] >= p1[0] else "Kran 2", (p2[0], p2[1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                 elif len(points) == 1:
-                    k1Value = self.calculatePosition(points[0][0])
+                    k1Value = points[0][0]
                     measurements.append((frame_timestamp, k1Value, None))
                     # cv2.putText(frame, str(k1Value), points[0], cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     # cv2.putText(frame, "Kran 1", (points[0][0], points[0][1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
