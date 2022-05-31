@@ -1,16 +1,49 @@
 #!/usr/bin/env python3
 
+import os
 from typing import List
 from db.context import DataContext
+from models.calibration import CalibrationEntity
+from output.calibration_writer import CalibrationWriter
+from output.csv_writer import CsvWriter
 from processing.processor import Processor
 import matplotlib.pyplot as plt
+from argparse import ArgumentParser, FileType, Namespace
+import pathlib
+import csv
 
 
-# TODO mechanismus: warnungen fehler etc, dunkelheit
-# TODO mehrere kräne
+def calibrate(args: Namespace) -> None:
+    calibration_entities = []
+    with args.inputfile as csvfile:
+        reader = csv.DictReader(csvfile, delimiter=";")
+        for row in reader:
+            calibration_entities.append(CalibrationEntity(row["timestamp"], float(row["position1"]) if len(row["position1"])
+                                                          > 0 else None, float(row["position2"]) if len(row["position2"]) > 0 else None))
+    dataContext = DataContext()
+    processor = Processor(dataContext)
+    csvWriter = CsvWriter()
+    calibrationWriter = CalibrationWriter()
+    processor.get_static_positions(args.path[0], calibration_entities)
+    csvWriter.write_calibration_result(os.path.dirname(args.inputfile.name), calibration_entities)
+    calibrationWriter.write_calibration(calibration_entities)
 
 
 def main():
+    parser = ArgumentParser()
+    methods = {
+        "calibrate": calibrate
+    }
+    parser.add_argument("method", metavar="method", choices=list(methods.keys()), type=str, nargs=1, help="Name of the method to be executed")
+    parser.add_argument("-p", "--path", dest="path", type=pathlib.Path, help="path to video files", nargs=1)
+    parser.add_argument("-i", "--input", dest="inputfile", type=FileType('r'), help="path to input file", nargs="?")
+    args = parser.parse_args()
+    print(args)
+
+    method = methods[args.method[0]]
+    method(args)
+    return
+
     dataContext = DataContext()
     processor = Processor(dataContext)
     # processor.test()

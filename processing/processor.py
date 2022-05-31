@@ -8,6 +8,7 @@ import os
 import datetime
 
 from db.context import DataContext
+from models.calibration import CalibrationEntity
 
 
 class Processor:
@@ -116,8 +117,21 @@ class Processor:
         # Closes all the frames
         cv2.destroyAllWindows()
 
-    def get_static_positions(self, files: List[Tuple[str, str]]):
-        for (filePath, timestamp) in files:
+    @staticmethod
+    def get_file_path_for_timestamp(path, timestamp) -> str:
+        timestamps = [datetime.datetime.strptime(f, '%Y-%m-%d_%H-%M-%S.mp4')
+                      for f in os.listdir(path)
+                      if os.path.isfile(os.path.join(path, f)) and os.path.splitext(f)[1]==".mp4"]
+        timestamp = datetime.datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
+        timestamps = list(filter(lambda x: x <= timestamp, timestamps))
+        if len(timestamps) == 0:
+            return None
+        file_name = datetime.datetime.strftime(max(timestamps), '%Y-%m-%d_%H-%M-%S.mp4')
+        return os.path.join(path, file_name)
+
+    def get_static_positions(self, path, calibration_entities: List[CalibrationEntity]):
+        for entity in calibration_entities:
+            filePath = Processor.get_file_path_for_timestamp(path, entity.timestamp)
             fileName = os.path.basename(filePath)
             print("File: ", fileName)
             cap = cv2.VideoCapture(filePath)
@@ -134,10 +148,22 @@ class Processor:
                     frame_timestamp = start_time + \
                         datetime.timedelta(milliseconds=last_time)
                     last_time = last_time+1000/fps
-                    if str(frame_timestamp) != timestamp:
+
+                    if str(frame_timestamp) != entity.timestamp:
                         continue
                     else:
-                        print(timestamp, points)
+                        print(entity.timestamp, points)
+                        if len(points) == 1:
+                            entity.position2_calculated = points[0][0]
+                        elif len(points) == 2:
+                            p1 = points[0][0]
+                            p2 = points[1][0]
+                            if p1 > p2:
+                                entity.position1_calculated = p2
+                                entity.position2_calculated = p1
+                            else:
+                                entity.position1_calculated = p1
+                                entity.position2_calculated = p2
                         break
                 else:
                     break
