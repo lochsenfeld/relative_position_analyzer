@@ -9,7 +9,7 @@ from models.calibration import CalibrationEntity
 
 class CalibrationWriter:
 
-    def write_calibration(self, calibration_entities: List[CalibrationEntity]) -> None:
+    def write_calibration(self, calibration_entities: List[CalibrationEntity], polynoms: int = 2) -> None:
         calibration_file = os.path.join(os.getcwd(), "calibration")
         print("Writing calibration to:\t", calibration_file)
         x = []
@@ -23,10 +23,8 @@ class CalibrationWriter:
                 y.append(entity.position2_original)
         # plt.plot(x, y, marker='o')
         # plt.show()
-        koeff = np.polyfit(x, y, 2)
+        koeff = np.polyfit(x, y, polynoms)
         poly = np.poly1d(koeff)
         print("polynom is: \n", poly)
         with open(calibration_file, "w") as f:
-            f.write(str(poly.coef[2])+"\n")
-            f.write(str(poly.coef[1])+"\n")
-            f.write(str(poly.coef[0]))
+            f.writelines("\n".join([str(x) for x in poly.coef]))

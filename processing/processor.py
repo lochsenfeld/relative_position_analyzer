@@ -121,7 +121,7 @@ class Processor:
     def get_file_path_for_timestamp(path, timestamp) -> str:
         timestamps = [datetime.datetime.strptime(f, '%Y-%m-%d_%H-%M-%S.mp4')
                       for f in os.listdir(path)
-                      if os.path.isfile(os.path.join(path, f)) and os.path.splitext(f)[1]==".mp4"]
+                      if os.path.isfile(os.path.join(path, f)) and os.path.splitext(f)[1] == ".mp4"]
         timestamp = datetime.datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
         timestamps = list(filter(lambda x: x <= timestamp, timestamps))
         if len(timestamps) == 0:
@@ -133,7 +133,7 @@ class Processor:
         for entity in calibration_entities:
             filePath = Processor.get_file_path_for_timestamp(path, entity.timestamp)
             fileName = os.path.basename(filePath)
-            print("File: ", fileName)
+            print("Entity: ", entity)
             cap = cv2.VideoCapture(filePath)
             c_time = os.path.basename(filePath)
             start_time = datetime.datetime.strptime(c_time, '%Y-%m-%d_%H-%M-%S.mp4')
@@ -152,7 +152,6 @@ class Processor:
                     if str(frame_timestamp) != entity.timestamp:
                         continue
                     else:
-                        print(entity.timestamp, points)
                         if len(points) == 1:
                             entity.position2_calculated = points[0][0]
                         elif len(points) == 2:
@@ -192,22 +191,22 @@ class Processor:
                     datetime.timedelta(milliseconds=last_time)
                 last_time = last_time+1000/fps
                 if len(points) == 2:
-                    p1 = points[0]
-                    p2 = points[1]
-                    if p1[0] >= p2[0]:
-                        k2Value = p1[0]
-                        k1Value = p2[0]
+                    p1 = points[0][0]
+                    p2 = points[1][0]
+                    if p1 >= p2:
+                        k2Value = p1
+                        k1Value = p2
                     else:
-                        k1Value = p1[0]
-                        k2Value = p2[0]
+                        k1Value = p1
+                        k2Value = p2
                     measurements.append((frame_timestamp, k1Value, k2Value))
                     # cv2.putText(frame, str(k1Value), p1, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     # cv2.putText(frame, "Kran 1" if p1[0] >= p2[0] else "Kran 2", (p1[0], p1[1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     # cv2.putText(frame, str(k2Value), p2, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     # cv2.putText(frame, "Kran 1" if p2[0] >= p1[0] else "Kran 2", (p2[0], p2[1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                 elif len(points) == 1:
-                    k1Value = points[0][0]
-                    measurements.append((frame_timestamp, k1Value, None))
+                    k2Value = points[0][0]
+                    measurements.append((frame_timestamp, None, k2Value))
                     # cv2.putText(frame, str(k1Value), points[0], cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     # cv2.putText(frame, "Kran 1", (points[0][0], points[0][1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                 # cv2.imshow('Output', mask)

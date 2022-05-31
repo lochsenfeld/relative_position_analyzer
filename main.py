@@ -13,6 +13,8 @@ import pathlib
 import csv
 
 
+#TODO y immer zwischen 40 und 60
+
 def calibrate(args: Namespace) -> None:
     calibration_entities = []
     with args.inputfile as csvfile:
