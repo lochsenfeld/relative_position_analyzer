@@ -38,9 +38,7 @@ def run(dbPath: str, path: str):
     dataContext = DataContext(dbPath)
     processor = Processor(dataContext)
     processor.analyze(path)
-#1 => 11
-#4 => 24
-#8 => 46
+
 def analyze(args: Namespace) -> None:
     number_of_threads = args.threads
     DataContext(args.dbPath)
@@ -48,18 +46,10 @@ def analyze(args: Namespace) -> None:
     files = [os.path.join(args.path, f) for f in os.listdir(args.path)
              if os.path.isfile(os.path.join(args.path, f)) and os.path.splitext(f)[1] == ".mp4"]
     # TODO filtern
-    # q = Queue()
-    # for path in files:
-    #     q.put(path)
-
-    # processes = [Process(target=run, args=(args.dbPath, q)) for _ in range(number_of_threads)]
     pool = Pool(number_of_threads)
     processes = [pool.apply_async(run, args=(args.dbPath, f)) for f in files]
     for p in processes:
         p.get()
-
-    # for p in processes:
-    #     p.join()
 
 
 def main():
