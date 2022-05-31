@@ -75,10 +75,10 @@ class Processor:
                 points.append((int(cX), int(cY)))
         if len(points) == 0:
             cs = list(map(lambda x: cv2.contourArea(x), contours))
-            if len(cs) > 0:
-                print("KEINE DATENPUNKTE!", max(cs))
-            else:
-                print("KEINE DATENPUNKTE!")
+            # if len(cs) > 0:
+            #     print("KEINE DATENPUNKTE!", max(cs))
+            # else:
+            #     print("KEINE DATENPUNKTE!")
         elif len(points) > 2:
             print("MORE THAN 2 POINTS")
             # cv2.imwrite("test.png", frame)
@@ -132,7 +132,6 @@ class Processor:
     def get_static_positions(self, path, calibration_entities: List[CalibrationEntity]):
         for entity in calibration_entities:
             filePath = Processor.get_file_path_for_timestamp(path, entity.timestamp)
-            fileName = os.path.basename(filePath)
             print("Entity: ", entity)
             cap = cv2.VideoCapture(filePath)
             c_time = os.path.basename(filePath)
@@ -218,9 +217,9 @@ class Processor:
             else:
                 break
         self.ctx.insertMeasurements(fileName, measurements)
-        end = time.time()
-        print("Took x seconds:", int(end - start))
         # When everything done, release the video capture object
+        end = time.time()-start
+        print(end)
         cap.release()
         # Closes all the frames
         cv2.destroyAllWindows()
