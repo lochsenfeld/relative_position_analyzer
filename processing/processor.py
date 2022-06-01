@@ -9,6 +9,7 @@ import datetime
 
 from db.context import DataContext
 from models.calibration import CalibrationEntity
+from processing.frame_reader import FrameReader
 
 
 class Processor:
@@ -172,54 +173,37 @@ class Processor:
     def analyze(self, filePath: str) -> None:
         fileName = os.path.basename(filePath)
         print("File: ", fileName)
-        cap = cv2.VideoCapture(filePath)
+        frameReader = FrameReader(filePath).start()
         c_time = os.path.basename(filePath)
         start_time = datetime.datetime.strptime(c_time, '%Y-%m-%d_%H-%M-%S.mp4')
-        fps = cap.get(cv2.CAP_PROP_FPS)
+        fps = frameReader.fps()
         last_time = 0.0
         self.ctx.clearFile(fileName)
         start = time.time()
         measurements = []
-        while cap.isOpened():
-            frame_exists, curr_frame = cap.read()
-            if frame_exists:
-
-                frame = curr_frame[510:600, 0:-1]
-                points, mask = self.get_center_of_mass(frame)
-                frame_timestamp = start_time + \
-                    datetime.timedelta(milliseconds=last_time)
-                last_time = last_time+1000/fps
-                if len(points) == 2:
-                    p1 = points[0][0]
-                    p2 = points[1][0]
-                    if p1 >= p2:
-                        k2Value = p1
-                        k1Value = p2
-                    else:
-                        k1Value = p1
-                        k2Value = p2
-                    measurements.append((frame_timestamp, k1Value, k2Value))
-                    # cv2.putText(frame, str(k1Value), p1, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-                    # cv2.putText(frame, "Kran 1" if p1[0] >= p2[0] else "Kran 2", (p1[0], p1[1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-                    # cv2.putText(frame, str(k2Value), p2, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-                    # cv2.putText(frame, "Kran 1" if p2[0] >= p1[0] else "Kran 2", (p2[0], p2[1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-                elif len(points) == 1:
-                    k2Value = points[0][0]
-                    measurements.append((frame_timestamp, None, k2Value))
-                    # cv2.putText(frame, str(k1Value), points[0], cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-                    # cv2.putText(frame, "Kran 1", (points[0][0], points[0][1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-                # cv2.imshow('Output', mask)
-                # cv2.imshow('frame', frame)
-                # if cv2.waitKey(25) & 0xFF == ord('q'):
-                #     break
-
-            # Break the loop
-            else:
-                break
+        while frameReader.more():
+            frame = frameReader.read()
+            points, mask = self.get_center_of_mass(frame)
+            frame_timestamp = start_time + \
+                datetime.timedelta(milliseconds=last_time)
+            last_time = last_time+1000/fps
+            if len(points) == 2:
+                p1 = points[0][0]
+                p2 = points[1][0]
+                if p1 >= p2:
+                    k2Value = p1
+                    k1Value = p2
+                else:
+                    k1Value = p1
+                    k2Value = p2
+                measurements.append((frame_timestamp, k1Value, k2Value))
+            elif len(points) == 1:
+                k2Value = points[0][0]
+                measurements.append((frame_timestamp, None, k2Value))
         self.ctx.insertMeasurements(fileName, measurements)
         # When everything done, release the video capture object
         end = time.time()-start
         print(end)
-        cap.release()
-        # Closes all the frames
+        # cap.release()
         cv2.destroyAllWindows()
+        frameReader.stop()

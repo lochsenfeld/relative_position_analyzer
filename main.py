@@ -16,6 +16,8 @@ import csv
 
 # 49
 # TODO y immer zwischen 40 und 60
+# TODO resize
+# TODO filter dateien
 
 
 def calibrate(args: Namespace) -> None:
@@ -38,6 +40,7 @@ def run(dbPath: str, path: str):
     dataContext = DataContext(dbPath)
     processor = Processor(dataContext)
     processor.analyze(path)
+
 
 def analyze(args: Namespace) -> None:
     number_of_threads = args.threads
