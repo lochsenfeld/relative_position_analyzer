@@ -31,6 +31,11 @@ class FrameReader:
                     return
 
                 frame = frame[510:600, 0:-1]#TODO delete
+                # scale_percent = 60 # percent of original size
+                # width = int(frame.shape[1] * scale_percent / 100)
+                # height = int(frame.shape[0] * scale_percent / 100)
+                # dim = (width, height)
+                # frame = cv2.resize(frame,dim)
                 self.Q.put(frame)
 
     def read(self):

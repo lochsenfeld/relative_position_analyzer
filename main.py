@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
+from ast import arg
 from multiprocessing.dummy import Process
 import os
 from multiprocessing import Pool, Queue
+from threading import Thread
+import time
 from typing import List
 from db.context import DataContext
 from models.calibration import CalibrationEntity
@@ -16,7 +19,6 @@ import csv
 
 # 49
 # TODO y immer zwischen 40 und 60
-# TODO resize
 # TODO filter dateien
 
 
@@ -49,11 +51,16 @@ def analyze(args: Namespace) -> None:
     files = [os.path.join(args.path, f) for f in os.listdir(args.path)
              if os.path.isfile(os.path.join(args.path, f)) and os.path.splitext(f)[1] == ".mp4"]
     # TODO filtern
-    pool = Pool(number_of_threads)
-    processes = [pool.apply_async(run, args=(args.dbPath, f)) for f in files]
-    for p in processes:
-        p.get()
-
+    start = time.time()
+    # pool = Pool(number_of_threads)
+    # processes = [pool.apply_async(run, args=(args.dbPath, f)) for f in files]
+    # for p in processes:
+    #     p.get()
+    
+    # for p in files:
+    #     run(args.dbPath, p)
+    run(args.dbPath, files[0])
+    print("took ", time.time()-start)
 
 def main():
     parser = ArgumentParser()

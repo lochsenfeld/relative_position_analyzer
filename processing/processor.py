@@ -17,7 +17,7 @@ class Processor:
     def __init__(self, dataContext: DataContext) -> None:
         self.ctx = dataContext
 
-    def get_center_of_mass(self, frame: Array) -> None:
+    def get_center_of_mass(self, frame: Array) -> Array:
 
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
@@ -83,7 +83,7 @@ class Processor:
         elif len(points) > 2:
             print("MORE THAN 2 POINTS")
             # cv2.imwrite("test.png", frame)
-        return points, mask
+        return points
 
     def test(self):
 
@@ -179,11 +179,10 @@ class Processor:
         fps = frameReader.fps()
         last_time = 0.0
         self.ctx.clearFile(fileName)
-        start = time.time()
         measurements = []
         while frameReader.more():
             frame = frameReader.read()
-            points, mask = self.get_center_of_mass(frame)
+            points = self.get_center_of_mass(frame)
             frame_timestamp = start_time + \
                 datetime.timedelta(milliseconds=last_time)
             last_time = last_time+1000/fps
@@ -202,8 +201,6 @@ class Processor:
                 measurements.append((frame_timestamp, None, k2Value))
         self.ctx.insertMeasurements(fileName, measurements)
         # When everything done, release the video capture object
-        end = time.time()-start
-        print(end)
         # cap.release()
         cv2.destroyAllWindows()
         frameReader.stop()
