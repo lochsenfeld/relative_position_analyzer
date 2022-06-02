@@ -30,7 +30,8 @@ class FrameReader:
                     self.stop()
                     return
 
-                frame = frame[510:600, 0:-1]#TODO delete
+                #frame = frame[510:600, 0:-1]#TODO delete
+
                 # scale_percent = 60 # percent of original size
                 # width = int(frame.shape[1] * scale_percent / 100)
                 # height = int(frame.shape[0] * scale_percent / 100)
@@ -47,5 +48,10 @@ class FrameReader:
     def stop(self):
         self.stopped = True
 
+    @property
     def fps(self):
         return self.stream.get(cv2.CAP_PROP_FPS)
+
+    @property
+    def fpsCount(self):
+        return int(self.stream.get(cv2.CAP_PROP_FRAME_COUNT))
