@@ -6,6 +6,7 @@ from ctypes import Array
 import numpy as np
 import os
 import datetime
+from timeit import default_timer as timer
 
 from db.context import DataContext
 from models.calibration import CalibrationEntity
@@ -18,9 +19,11 @@ class Processor:
         self.ctx = dataContext
 
     def get_center_of_mass(self, frame: Array) -> Array:
-
+        a = timer()
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
+        b = timer()
+        print(3, (b-a))
+        a = timer()
         # h_low = cv2.getTrackbarPos("h_low", "trackbars")
         # h_high = cv2.getTrackbarPos("h_high", "trackbars")
         # s_low = cv2.getTrackbarPos("s_low", "trackbars")
@@ -34,35 +37,53 @@ class Processor:
         # upper1 = np.array([h_high, s_high, v_high])
 
         mask1 = cv2.inRange(hsv, lower1, upper1)
-
+        b = timer()
+        print(4, (b-a))
+        a = timer()
         lower2 = np.array([169, 150, 20])
         upper2 = np.array([180, 255, 255])
 
         mask2 = cv2.inRange(hsv, lower2, upper2)
-
+        b = timer()
+        print(5, (b-a))
+        a = timer()
         mask = cv2.bitwise_or(mask1, mask2)
-
+        b = timer()
+        print(6, (b-a))
+        a = timer()
         lower3 = np.array([172, 0, 136])
         upper3 = np.array([173, 41, 144])
         mask3 = cv2.inRange(hsv, lower3, upper3)
-
+        b = timer()
+        print(7, (b-a))
+        a = timer()
         mask = cv2.subtract(mask, mask3)
-
+        b = timer()
+        print(8, (b-a))
+        a = timer()
         lower4 = np.array([173, 40, 101])
         upper4 = np.array([178, 52, 127])
         mask4 = cv2.inRange(hsv, lower4, upper4)
-
+        b = timer()
+        print(9, (b-a))
+        a = timer()
         mask = cv2.subtract(mask, mask4)
-
+        b = timer()
+        print(10, (b-a))
+        a = timer()
         kernel = (3, 3)
         # mask = cv2.erode(mask, kernel, iterations=cv2.getTrackbarPos("i1", "trackbars"))
         # mask = cv2.dilate(mask, kernel, iterations=cv2.getTrackbarPos("i2", "trackbars"))
         normed = cv2.normalize(mask, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8UC1)
         kernel = cv2.getStructuringElement(shape=cv2.MORPH_ELLIPSE, ksize=(3, 3))
         mask = cv2.morphologyEx(normed, cv2.MORPH_OPEN, kernel)
-
+        b = timer()
+        print(11, (b-a))
+        a = timer()
         contours, _ = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-
+        b = timer()
+        print(12, (b-a))
+        a = timer()
         points = []
 
         for contour in contours:
@@ -83,6 +104,8 @@ class Processor:
         elif len(points) > 2:
             print("MORE THAN 2 POINTS")
             # cv2.imwrite("test.png", frame)
+        b = timer()
+        print(13, (b-a))
         return points
 
     def test(self):
@@ -183,11 +206,17 @@ class Processor:
         measurements = []
         frameCounter = 0
         while frameReader.more():
+            a = timer()
             frame = frameReader.read()
+            b = timer()
+            print(1, (b-a))
+            a = timer()
             frameCounter += 1
             if frameCounter % 100 == 0:
                 print("{}\t{} - {}%".format(datetime.datetime.now().strftime("%H:%M:%S"), fileName, int(frameCounter*10000/fpsCount)/100))
             points = self.get_center_of_mass(frame)
+            b = timer()
+            print(2, (b-a))
             frame_timestamp = start_time + datetime.timedelta(milliseconds=last_time)
             last_time = last_time+1000/fps
             if len(points) == 2:
