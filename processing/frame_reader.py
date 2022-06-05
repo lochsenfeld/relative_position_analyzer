@@ -13,7 +13,7 @@ class FrameReader:
         self.t = Thread(target=self.update, args=())
 
     def start(self):
-        
+
         self.t.daemon = True
         self.t.start()
         return self
@@ -29,8 +29,7 @@ class FrameReader:
                 if not grabbed:
                     self.stop()
                     return
-
-                #frame = frame[510:600, 0:-1]#TODO delete
+                frame = frame[515:565, 0:-1]
 
                 # scale_percent = 60 # percent of original size
                 # width = int(frame.shape[1] * scale_percent / 100)

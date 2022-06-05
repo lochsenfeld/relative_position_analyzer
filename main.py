@@ -21,6 +21,7 @@ import csv
 # 49
 # TODO y immer zwischen 40 und 60
 # TODO filter dateien
+# TODO nur jeden 6. Frame analysieren
 
 
 def calibrate(args: Namespace) -> None:
@@ -60,7 +61,9 @@ def analyze(args: Namespace) -> None:
     
     # for p in files:
     #     run(args.dbPath, p)
-    run(args.dbPath, files[0])
+    
+    
+    run(args.dbPath, "C:/Users/Leon Ochsenfeld/Downloads/Telegram Desktop/test leon/test leon/2022-06-05_22-02-03.mp4")
     print("took ", time.time()-start)
 
 def output(args: Namespace) -> None:
