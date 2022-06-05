@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-from datetime import datetime
+from datetime import datetime, timedelta
 import sqlite3
-from typing import List
+import time
+from typing import List, Tuple
 
 
 class DataContext:
 
-    def __init__(self, path:str) -> None:
+    def __init__(self, path: str) -> None:
         self.ctx = sqlite3.connect(path)
         self.__migrate()
 
@@ -47,3 +48,18 @@ class DataContext:
         cur.execute('''DELETE FROM measurements WHERE filename = :filename;''', {"filename": filename})
         cur.execute('''DELETE FROM processed_files WHERE filename = :filename;''', {"filename": filename})
         self.ctx.commit()
+
+    def get_days(self) -> List[str]:
+        cur = self.ctx.cursor()
+        cur.execute('''SELECT filename FROM processed_files;''')
+        days = []
+        for (filename, ) in cur.fetchall():
+            day = datetime.strftime(datetime.strptime(filename, '%Y-%m-%d_%H-%M-%S.mp4'), "%Y-%m-%d")
+            if day not in days:
+                days.append(day)
+        return days
+
+    def get_measurements_for_day(self, day):
+        cur = self.ctx.cursor()
+        cur.execute('''SELECT substr(time,1,19), AVG(k1), AVG(k2) FROM measurements m WHERE filename LIKE :day GROUP BY 1;''',{"day": day+"%"})
+        return cur.fetchall()
