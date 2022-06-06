@@ -23,14 +23,18 @@ class ResultWriter:
             result += self.x[i]*(x**(len(self.x)-i-1))
         return result
 
-    def calculate_position(self, positions: Tuple[float, float]) -> Tuple[float, float]:
+    def calculate_position(self, positions: Tuple[float, float], fallback: float = -10000) -> Tuple[float, float]:
         k1, k2 = positions
         if k1 is not None:
             k1 = self.transform(k1)
             k1 = str(k1).replace(".", ",")
+        else:
+            k1 = fallback
         if k2 is not None:
             k2 = self.transform(k2)
             k2 = str(k2).replace(".", ",")
+        else:
+            k2 = fallback
         return k1, k2
 
     def write_results(self, path: str) -> None:
