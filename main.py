@@ -54,16 +54,14 @@ def analyze(args: Namespace) -> None:
              if os.path.isfile(os.path.join(args.path, f)) and os.path.splitext(f)[1] == ".mp4"]
     # TODO filtern
     start = time.time()
-    # pool = Pool(number_of_threads)
-    # processes = [pool.apply_async(run, args=(args.dbPath, f)) for f in files]
-    # for p in processes:
-    #     p.get()
+    pool = Pool(number_of_threads)
+    processes = [pool.apply_async(run, args=(args.dbPath, f)) for f in files]
+    for p in processes:
+        p.get()
     
-    # for p in files:
-    #     run(args.dbPath, p)
+    for p in files:
+        run(args.dbPath, p)
     
-    
-    run(args.dbPath, "C:/Users/Leon Ochsenfeld/Downloads/Telegram Desktop/test leon/test leon/2022-06-05_22-02-03.mp4")
     print("took ", time.time()-start)
 
 def output(args: Namespace) -> None:

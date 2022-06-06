@@ -177,7 +177,7 @@ class Processor:
         c_time = os.path.basename(filePath)
         start_time = datetime.datetime.strptime(c_time, '%Y-%m-%d_%H-%M-%S.mp4')
         fps = frameReader.fps
-        fpsCount = frameReader.fpsCount
+        # fpsCount = frameReader.fpsCount
         last_time = 0.0
         self.ctx.clearFile(fileName)
         measurements = []
@@ -185,8 +185,8 @@ class Processor:
         while frameReader.more():
             frame = frameReader.read()
             frameCounter += 1
-            if frameCounter % 100 == 0:
-                print("{}\t{} - {}%".format(datetime.datetime.now().strftime("%H:%M:%S"), fileName, int(frameCounter*10000/fpsCount)/100))
+            # if frameCounter % 100 == 0:
+            #     print("{}\t{} - {}%".format(datetime.datetime.now().strftime("%H:%M:%S"), fileName, int(frameCounter*10000/fpsCount)/100))
             points = self.get_center_of_mass(frame)
             frame_timestamp = start_time + datetime.timedelta(milliseconds=last_time)
             last_time = last_time+1000/fps
