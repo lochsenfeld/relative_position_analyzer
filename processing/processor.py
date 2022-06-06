@@ -181,6 +181,7 @@ class Processor:
         last_time = 0.0
         self.ctx.clearFile(fileName)
         measurements = []
+        error_measurements = []
         frameCounter = 0
         while frameReader.more():
             frame = frameReader.read()
@@ -203,7 +204,9 @@ class Processor:
             elif len(points) == 1:
                 k2Value = points[0][0]
                 measurements.append((frame_timestamp, None, k2Value))
-        self.ctx.insertMeasurements(fileName, measurements)
+            elif len(points) > 2:
+                error_measurements.append(frame_timestamp)
+        self.ctx.insertMeasurements(fileName, measurements, error_measurements)
         # When everything done, release the video capture object
         # cap.release()
         cv2.destroyAllWindows()

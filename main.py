@@ -20,8 +20,6 @@ import csv
 
 # 49
 # TODO y immer zwischen 40 und 60
-# TODO filter dateien
-# TODO nur jeden 6. Frame analysieren
 
 
 def calibrate(args: Namespace) -> None:
@@ -48,11 +46,17 @@ def run(dbPath: str, path: str):
 
 def analyze(args: Namespace) -> None:
     number_of_threads = args.threads
-    DataContext(args.dbPath)
+    db = DataContext(args.dbPath)
 
     files = [os.path.join(args.path, f) for f in os.listdir(args.path)
              if os.path.isfile(os.path.join(args.path, f)) and os.path.splitext(f)[1] == ".mp4"]
-    # TODO filtern
+    filtered_files = []
+    processedFiles = db.getProcessedFiles()
+    for f in files:
+        fileName = os.path.basename(f)
+        if fileName not in processedFiles:
+            filtered_files.append(f)
+    # filter(lambda x: ,files)
     start = time.time()
     pool = Pool(number_of_threads)
     processes = [pool.apply_async(run, args=(args.dbPath, f)) for f in files]
@@ -61,7 +65,6 @@ def analyze(args: Namespace) -> None:
     
     for p in files:
         run(args.dbPath, p)
-    
     print("took ", time.time()-start)
 
 def output(args: Namespace) -> None:
