@@ -72,12 +72,18 @@ def output(args: Namespace) -> None:
     output = ResultWriter(dataContext)
     output.write_results(args.outputPath)
 
+def plot(args: Namespace) -> None:
+    dataContext = DataContext(args.dbPath)
+    output = ResultWriter(dataContext)
+    output.plot(args.date)
+
 def main():
     parser = ArgumentParser()
     methods = {
         "calibrate": calibrate,
         "analyze": analyze,
-        "output": output
+        "output": output,
+        "plot": plot
     }
     parser.add_argument("method", metavar="method", choices=list(methods.keys()), type=str, help="Name of the method to be executed")
     parser.add_argument("-p", "--path", dest="path", type=pathlib.Path, help="path to video files")
@@ -85,6 +91,7 @@ def main():
     parser.add_argument("-i", "--input", dest="inputfile", type=FileType('r'), help="path to input file", nargs="?")
     parser.add_argument("-o", "--output", dest="outputPath", type=pathlib.Path, help="path to output dir", nargs="?")
     parser.add_argument("-t", "--threads", dest="threads", type=int, help="number of threads")
+    parser.add_argument("-dt", "--date", dest="date", type=str, help="date for plotting")
     args = parser.parse_args()
     print(args)
 
