@@ -36,7 +36,7 @@ class ResultWriter:
             k2 = fallback
         return k1, k2
 
-    def plot(self, date: str)->None:
+    def plot(self, date: str,fallback:float=-10000)->None:
         measurements = self.ctx.get_measurements_for_day(date)
         orderedMeasurements = {}
         for (time, k1, k2) in measurements:
@@ -52,16 +52,21 @@ class ResultWriter:
             if key in orderedMeasurements:
                 m = orderedMeasurements[key]
                 k1, k2 = self.calculate_position(m, fallback=None)
+                y1.append(timestamp)
+                y2.append(timestamp)
                 if k1 is not None:
-                    y1.append(timestamp)
                     x1.append(k1)
+                else:
+                    x1.append(fallback)
                 if k2 is not None:
-                    y2.append(timestamp)
                     x2.append(k2)
-            # else:
-                # y.append(timestamp)
-                # x1.append(None)
-                # x2.append(None)
+                else:
+                    x2.append(fallback)
+            else:
+                y1.append(timestamp)
+                y2.append(timestamp)
+                x1.append(fallback)
+                x2.append(fallback)
         plt.plot(x2, marker='o')
         plt.show()
 
