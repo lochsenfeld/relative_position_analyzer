@@ -41,7 +41,7 @@ class DataContext:
     def insertMeasurements(self, filename: str, measurements: List[tuple[datetime, int, int]], error_measurements: List[datetime]) -> None:
         cur = self.ctx.cursor()
         cur.executemany('''INSERT INTO measurements VALUES (?,?,?,?);''', list(map(lambda x: (filename,)+x, measurements)))
-        cur.executemany('''INSERT INTO error_measurements VALUES (?,?);''', list(map(lambda x: (filename,)+x, error_measurements)))
+        cur.executemany('''INSERT INTO error_measurements VALUES (?,?);''', list(map(lambda x: (filename,x,), error_measurements)))
         cur.execute('''INSERT INTO processed_files VALUES (?);''', (filename,))
         self.ctx.commit()
 
