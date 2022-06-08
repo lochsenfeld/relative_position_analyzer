@@ -62,9 +62,6 @@ def analyze(args: Namespace) -> None:
     processes = [pool.apply_async(run, args=(args.dbPath, f)) for f in filtered_files]
     for p in processes:
         p.get()
-    
-    for p in filtered_files:
-        run(args.dbPath, p)
     print("took ", time.time()-start)
 
 def output(args: Namespace) -> None:
