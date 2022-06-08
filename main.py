@@ -59,11 +59,11 @@ def analyze(args: Namespace) -> None:
     # filter(lambda x: ,files)
     start = time.time()
     pool = Pool(number_of_threads)
-    processes = [pool.apply_async(run, args=(args.dbPath, f)) for f in files]
+    processes = [pool.apply_async(run, args=(args.dbPath, f)) for f in filtered_files]
     for p in processes:
         p.get()
     
-    for p in files:
+    for p in filtered_files:
         run(args.dbPath, p)
     print("took ", time.time()-start)
 
