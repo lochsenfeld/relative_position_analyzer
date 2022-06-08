@@ -29,7 +29,7 @@ class FrameReader:
                 if not grabbed:
                     self.stop()
                     return
-                frame = frame[515:565, 0:-1]
+                frame = frame[532:555, 0:-1]
 
                 # scale_percent = 60 # percent of original size
                 # width = int(frame.shape[1] * scale_percent / 100)
