@@ -21,15 +21,41 @@ class Processor:
 
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-        # h_low = cv2.getTrackbarPos("h_low", "trackbars")
-        # h_high = cv2.getTrackbarPos("h_high", "trackbars")
-        # s_low = cv2.getTrackbarPos("s_low", "trackbars")
-        # s_high = cv2.getTrackbarPos("s_high", "trackbars")
-        # v_low = cv2.getTrackbarPos("v_low", "trackbars")
-        # v_high = cv2.getTrackbarPos("v_high", "trackbars")
+        lower1 = np.array([170, 20, 20])
+        upper1 = np.array([180, 255, 255])
+        # lower1 = np.array([h_low, s_low, v_low])
+        # upper1 = np.array([h_high, s_high, v_high])
 
-        lower1 = np.array([160, 57, 105])
-        upper1 = np.array([180, 148, 219])
+        mask = cv2.inRange(hsv, lower1, upper1)
+
+        contours, _ = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+
+        points = []
+        # cv2.imshow("mask",mask)
+        # print(len(contours))
+        for contour in contours:
+            # print(cv2.contourArea(contour))
+            if cv2.contourArea(contour) > 50:
+                # x, y, w, h = cv2.boundingRect(contour)
+                # cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 1, 16)
+                rbox = cv2.minAreaRect(contour)
+                (cX, cY), (w, h), rot_angle = rbox
+                # print(rot_angle)
+                if rot_angle <= 80 and rot_angle >= 100:
+                    continue
+                points.append((int(cX), int(cY)))
+        if len(points) == 0:
+            cs = list(map(lambda x: cv2.contourArea(x), contours))
+            # cv2.imwrite("low-"+str(uuid.uuid4())+".png", frame)
+            # if len(cs) > 0:
+            #     print("KEINE DATENPUNKTE!", max(cs))
+            # else:
+            #     print("KEINE DATENPUNKTE!")
+        elif len(points) > 2:
+            # cv2.imwrite("high-"+str(uuid.uuid4())+".png", frame)
+            print("MORE THAN 2 POINTS")
+            # cv2.imwrite("test.png", frame)
+        return points
         # lower1 = np.array([h_low, s_low, v_low])
         # upper1 = np.array([h_high, s_high, v_high])
 
