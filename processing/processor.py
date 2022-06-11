@@ -21,10 +21,17 @@ class Processor:
 
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-        lower1 = np.array([170, 20, 20])
-        upper1 = np.array([180, 255, 255])
+        lower1 = np.array([170, 35, 20])
+        upper1 = np.array([179, 255, 255])
 
         mask = cv2.inRange(hsv, lower1, upper1)
+
+
+        kernel = (3, 3)
+        normed = cv2.normalize(mask, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8UC1)
+        kernel = cv2.getStructuringElement(shape=cv2.MORPH_ELLIPSE, ksize=kernel)
+        mask = cv2.morphologyEx(normed, cv2.MORPH_OPEN, kernel)
+
 
         contours, _ = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
