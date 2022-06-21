@@ -26,12 +26,10 @@ class Processor:
 
         mask = cv2.inRange(hsv, lower1, upper1)
 
-
         kernel = (3, 3)
         normed = cv2.normalize(mask, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8UC1)
         kernel = cv2.getStructuringElement(shape=cv2.MORPH_ELLIPSE, ksize=kernel)
-        mask = cv2.morphologyEx(normed, cv2.MORPH_OPEN, kernel)
-
+        mask = cv2.morphologyEx(normed, cv2.MORPH_OPEN, kernel, iterations=2)
 
         contours, _ = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -40,7 +38,7 @@ class Processor:
         # print(len(contours))
         for contour in contours:
             # print(cv2.contourArea(contour))
-            if cv2.contourArea(contour) > 50:
+            if cv2.contourArea(contour) > 41:
                 # x, y, w, h = cv2.boundingRect(contour)
                 # cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 1, 16)
                 rbox = cv2.minAreaRect(contour)
@@ -49,16 +47,16 @@ class Processor:
                 if rot_angle <= 80 and rot_angle >= 100:
                     continue
                 points.append((int(cX), int(cY)))
-        if len(points) == 0:
-            cs = list(map(lambda x: cv2.contourArea(x), contours))
+       # if len(points) == 0:
+          #  cs = list(map(lambda x: cv2.contourArea(x), contours))
             # cv2.imwrite("low-"+str(uuid.uuid4())+".png", frame)
             # if len(cs) > 0:
             #     print("KEINE DATENPUNKTE!", max(cs))
             # else:
             #     print("KEINE DATENPUNKTE!")
-        elif len(points) > 2:
+      #  elif len(points) > 2:
             # cv2.imwrite("high-"+str(uuid.uuid4())+".png", frame)
-            print("MORE THAN 2 POINTS")
+        #    print("MORE THAN 2 POINTS")
             # cv2.imwrite("test.png", frame)
         return points
 

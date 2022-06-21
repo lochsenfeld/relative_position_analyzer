@@ -31,17 +31,17 @@ class FrameReader:
                     self.stop()
                     return
                 frame = frame[532:555, 0:-1]
-                maxIntensity = 255.0  # depends on dtype of image data
+                # maxIntensity = 255.0  # depends on dtype of image data
 
-                # Parameters for manipulating image data
-                phi = 1
-                theta = 1
+                # # Parameters for manipulating image data
+                # phi = 1
+                # theta = 1
 
-                # Increase intensity such that
-                # dark pixels become much brighter,
-                # bright pixels become slightly bright
-                frame = (maxIntensity/phi)*(frame/(maxIntensity/theta))**0.5
-                frame = np.array(frame, dtype=np.uint8)
+                # # Increase intensity such that
+                # # dark pixels become much brighter,
+                # # bright pixels become slightly bright
+                # frame = (maxIntensity/phi)*(frame/(maxIntensity/theta))**0.5
+                # frame = np.array(frame, dtype=np.uint8)
 
                 # scale_percent = 60 # percent of original size
                 # width = int(frame.shape[1] * scale_percent / 100)

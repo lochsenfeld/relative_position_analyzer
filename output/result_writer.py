@@ -36,7 +36,7 @@ class ResultWriter:
             k2 = fallback
         return k1, k2
 
-    def plot(self, date: str,fallback:float=-10000)->None:
+    def plot(self, date: str, fallback: float = -10000) -> None:
         measurements = self.ctx.get_measurements_for_day(date)
         orderedMeasurements = {}
         for (time, k1, k2) in measurements:
@@ -46,6 +46,7 @@ class ResultWriter:
         y2 = []
         x1 = []
         x2 = []
+        # fallback = None
         for time in (start_date+datetime.timedelta(seconds=n) for n in range(24*60*60)):
             timestamp = datetime.datetime.strftime(time, "'%Y-%m-%d_%H-%M-%S")
             key = str(time)
@@ -67,12 +68,15 @@ class ResultWriter:
                 y2.append(timestamp)
                 x1.append(fallback)
                 x2.append(fallback)
+        plt.figure(1)
+        plt.plot(x1, marker='o')
+        plt.figure(2)
         plt.plot(x2, marker='o')
         plt.show()
 
     def write_results(self, path: str, fallback: float = -10000) -> None:
         days = self.ctx.get_days()
-        fieldnames = ['timestamp', 'position1', "position2"]
+        fieldnames = ['date', "time", 'position1', "position2"]
         for day in days:
             print(day)
             with open(os.path.join(path, day+".csv"), "w", newline='') as csvfile:
@@ -85,7 +89,8 @@ class ResultWriter:
                     orderedMeasurements[time] = (k1, k2)
                 start_date = datetime.datetime.strptime(day, '%Y-%m-%d')
                 for time in (start_date+datetime.timedelta(seconds=n) for n in range(24*60*60)):
-                    timestamp = datetime.datetime.strftime(time, "'%Y-%m-%d_%H-%M-%S")
+                    date = datetime.datetime.strftime(time, "%d.%m.%Y")
+                    timestamp = datetime.datetime.strftime(time, "%H:%M:%S")
                     key = str(time)
                     if key in orderedMeasurements:
                         m = orderedMeasurements[key]
@@ -94,6 +99,6 @@ class ResultWriter:
                             k1 = str(k1).replace(".", ",")
                         if k2 is not None:
                             k2 = str(k2).replace(".", ",")
-                        writer.writerow({'timestamp': timestamp, 'position1': k1, "position2": k2})
+                        writer.writerow({'date': date, "time": timestamp, 'position1': k1, "position2": k2})
                     else:
-                        writer.writerow({'timestamp': timestamp, 'position1': fallback, "position2": fallback})
+                        writer.writerow({'date': date, "time": timestamp, 'position1': fallback, "position2": fallback})
