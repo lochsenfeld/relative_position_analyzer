@@ -9,7 +9,6 @@ import datetime
 
 from db.context import DataContext
 from models.calibration import CalibrationEntity
-from processing.frame_reader import FrameReader
 
 
 class Processor:
@@ -116,18 +115,20 @@ class Processor:
     def analyze(self, filePath: str) -> None:
         fileName = os.path.basename(filePath)
         print("File: ", fileName)
-        frameReader = FrameReader(filePath).start()
+        cap = cv2.VideoCapture(filePath)
         c_time = os.path.basename(filePath)
         start_time = datetime.datetime.strptime(c_time, '%Y-%m-%d_%H-%M-%S.mp4')
-        fps = frameReader.fps
-        # fpsCount = frameReader.fpsCount
+        fps = cap.get(cv2.CAP_PROP_FPS)
         last_time = 0.0
         self.ctx.clearFile(fileName)
         measurements = []
         error_measurements = []
         frameCounter = 0
-        while frameReader.more():
-            frame = frameReader.read()
+        while cap.isOpened():
+            (grabbed, frame) = cap.read()
+            if not grabbed:
+                break
+            frame = frame[532:555, 0:-1]
             frameCounter += 1
             # if frameCounter % 100 == 0:
             #     print("{}\t{} - {}%".format(datetime.datetime.now().strftime("%H:%M:%S"), fileName, int(frameCounter*10000/fpsCount)/100))
@@ -151,6 +152,5 @@ class Processor:
                 error_measurements.append(frame_timestamp)
         self.ctx.insertMeasurements(fileName, measurements, error_measurements)
         # When everything done, release the video capture object
-        # cap.release()
+        cap.release()
         cv2.destroyAllWindows()
-        frameReader.stop()
